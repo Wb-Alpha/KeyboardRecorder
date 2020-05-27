@@ -1,8 +1,13 @@
 import sys
+import MainUI
+
+
 
 from pynput import keyboard, mouse
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget
 import PyQt5
+
+
 
 def recordKeyboard(key):
     global times
