@@ -1,12 +1,9 @@
 import sys
-import MainUI
-
-
-
+#from . import MainUI
 from pynput import keyboard, mouse
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget
 import PyQt5
-
+import tkinter as tk
 
 
 def recordKeyboard(key):
@@ -17,8 +14,6 @@ def recordKeyboard(key):
 
 def on_click(x, y, button, pressed):
     print("click")
-
-
 
 
 if __name__ == "__main__":
@@ -33,15 +28,18 @@ if __name__ == "__main__":
     # init
     for key in keys:
         data[key] = 0
+    #---------------------------临时的GUI，过渡使用--------------------
+    '''root = tk.Tk()
+    root.resizable(0, 0)
 
-    app = QApplication(sys.argv)
+    mainCanves = tk.Canvas(root, height=150, width=250)
+    mainCanves.pack()
 
-    mainWindow = QWidget()
-    mainWindow.resize(250, 150)
-    mainWindow.setWindowTitle("KeyboardRecorder")
+    label1 = tk.Label(mainCanves, text="已经敲击了")
+    label1.grid(row=0, column=0)
 
-
-    mainWindow.show()
+    label2 = tk.Label(mainCanves, text="次键盘")
+    label2.grid(row=1, column=0)'''
 
     while True:
         '''with mouse.Listener(
@@ -51,5 +49,4 @@ if __name__ == "__main__":
         with keyboard.Listener(
                 on_release=recordKeyboard) as listener:
             listener.join()
-    sys.exit(app.exec_())
-
+    root.mainloop()
