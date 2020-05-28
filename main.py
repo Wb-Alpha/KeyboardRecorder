@@ -3,22 +3,40 @@ import sqlite3
 import sys
 # from . import MainUI
 import threading
-
 from pynput import keyboard, mouse
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget
 import PyQt5
 import tkinter as tk
 
 
+def dict_factory(cursor, row):
+    d = {}
+    for idx, col in enumerate(cursor.description):
+        d[col[0]] = row[idx]
+    return d
+
 def exitAndSave(root):
     root.destroy()
     global isExit
     isExit = True
     database1 = sqlite3.connect('InputData')
+    database1.row_factory = dict_factory
     c = database1.cursor()
-    parameter = (datetime.datetime.now().date(), times)
-    update = '''insert into keyStatistics (time, count) values (?, ?)'''
-    # c.execute(update, parameter)
+    sql_datainit = "select count from keyStatistics where time=?"
+    nowdate = (datetime.datetime.now().date(),)
+    lasttime = c.execute(sql_datainit, nowdate)
+    init_data = lasttime.fetchone()
+
+    if init_data != None:
+        update = "update keyStatistics set count=? where time=?"
+        parameter = (times, datetime.datetime.now().date())
+        c.execute(update, parameter)
+        print("update what we have")
+    else:
+        parameter = (datetime.datetime.now().date(), times)
+        update = '''insert into keyStatistics (time, count) values (?, ?)'''
+        c.execute(update, parameter)
+    database1.commit()
     print(isExit)
 
 
@@ -84,18 +102,25 @@ if __name__ == "__main__":
 
     # database
     database = sqlite3.connect('InputData')
+    database.row_factory = dict_factory
     con = database.cursor()
 
-
+    #如果是初次启动没有数据库表则新建数据库表
     con.execute('''create table if not exists keyStatistics
                 (time varchar(30) primary key,
                 count int not null);
                 ''')
+    database.commit()
 
-    sql_datainit = "select count from keyStatistics where ?"
-    nowdate = datetime.datetime.now().date()
-    times = con.execute(sql_datainit, nowdate)
+    #查询当天是否有数据
+    sql_datainit = "select count from keyStatistics where time=?"
+    nowdate = (datetime.datetime.now().date(),)
+    lasttime = con.execute(sql_datainit, nowdate)
+    init_data = lasttime.fetchone()
 
+
+    if init_data != None:
+        times = init_data['count']
 
     # init
     for key in keys:
@@ -110,3 +135,4 @@ if __name__ == "__main__":
     t2.start()
 
     t1.join()
+
