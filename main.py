@@ -1,7 +1,7 @@
 import datetime
 import sqlite3
 import sys
-from KeyRecorder import MainUI
+import MainUI
 import threading
 from pynput import keyboard, mouse
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget
