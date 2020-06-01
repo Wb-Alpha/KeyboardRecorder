@@ -1,7 +1,7 @@
 import datetime
 import sqlite3
 import sys
-# from . import MainUI
+from KeyRecorder import MainUI
 import threading
 from pynput import keyboard, mouse
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget
@@ -23,7 +23,7 @@ def exitAndSave(root):
     database1.row_factory = dict_factory
     c = database1.cursor()
     sql_datainit = "select count from keyStatistics where time=?"
-    nowdate = (datetime.datetime.now().date(),)
+    global nowdata
     lasttime = c.execute(sql_datainit, nowdate)
     init_data = lasttime.fetchone()
 
@@ -114,6 +114,7 @@ if __name__ == "__main__":
 
     #查询当天是否有数据
     sql_datainit = "select count from keyStatistics where time=?"
+    global nowdata
     nowdate = (datetime.datetime.now().date(),)
     lasttime = con.execute(sql_datainit, nowdate)
     init_data = lasttime.fetchone()
