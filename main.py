@@ -1,13 +1,18 @@
 import datetime
+import os
 import sqlite3
 import sys
 import MainUI
 import threading
 from pynput import keyboard, mouse
-from PyQt5.QtWidgets import QApplication, QLabel, QWidget
+from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QMainWindow
 import PyQt5
 import tkinter as tk
 
+class MyMainForm(QMainWindow, MainUI.Ui_MainWindow):
+    def __init__(self, parent=None):
+        super(MyMainForm, self).__init__(parent)
+        self.setupUi(self)
 
 def dict_factory(cursor, row):
     d = {}
@@ -122,6 +127,13 @@ if __name__ == "__main__":
 
     if init_data != None:
         times = init_data['count']
+
+    # 固定的，PyQt5程序都需要QApplication对象。sys.argv是命令行参数列表，确保程序可以双击运行
+    app = QApplication(sys.argv)
+    # 初始化
+    myWin = MyMainForm()
+    # 将窗口控件显示在屏幕上
+    myWin.show()
 
     # init
     for key in keys:
