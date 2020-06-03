@@ -3,6 +3,7 @@ import os
 import sqlite3
 import sys
 import MainUI
+import store
 import threading
 from pynput import keyboard, mouse
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QMainWindow
@@ -22,27 +23,32 @@ def dict_factory(cursor, row):
 
 def exitAndSave(root):
     root.destroy()
-    global isExit
-    isExit = True
+    '''
     database1 = sqlite3.connect('InputData')
     database1.row_factory = dict_factory
     c = database1.cursor()
     sql_datainit = "select count from keyStatistics where time=?"
-    global nowdata
-    lasttime = c.execute(sql_datainit, nowdate)
-    init_data = lasttime.fetchone()
+    
+    lasttime = c.execute(sql_datainit, (nowdate, ))
+    init_data = lasttime.fetchone()'''
+    global nowdate
+    init_data = store.isExist(nowdate)
 
     if init_data != None:
+        store.update(count, nowdate)
+        '''
         update = "update keyStatistics set count=? where time=?"
         parameter = (times, datetime.datetime.now().date())
         c.execute(update, parameter)
-        print("update what we have")
+        '''
     else:
+        store.insert(count, nowdate)
+        '''
         parameter = (datetime.datetime.now().date(), times)
-        update = '''insert into keyStatistics (time, count) values (?, ?)'''
+        update = "insert into keyStatistics (time, count) values (?, ?)"
         c.execute(update, parameter)
-    database1.commit()
-    print(isExit)
+        '''
+
 
 
 def recordKeyboard(key):
@@ -51,8 +57,7 @@ def recordKeyboard(key):
     global count
     count.config(text=str(times))
     print(times)
-    if not isExit:
-        return False
+
 
 
 def on_click(x, y, button, pressed):
@@ -61,7 +66,7 @@ def on_click(x, y, button, pressed):
 
 def countKeyboard():
     #该线程由于一直无法结束监听而似乎没有被关闭
-    while isExit == False:
+    while True:
         '''with mouse.Listener(
                 on_click=on_c   lick) as listener:
             listener.join()'''
@@ -98,7 +103,6 @@ if __name__ == "__main__":
     # Store the input times data
     data = {}
     global times
-    global isExit
     global count
     isExit = False
     times = 0
@@ -111,20 +115,14 @@ if __name__ == "__main__":
     con = database.cursor()
 
     #如果是初次启动没有数据库表则新建数据库表
-    con.execute('''create table if not exists keyStatistics
-                (time varchar(30) primary key,
-                count int not null);
-                ''')
-    database.commit()
+    store.initTable()
 
-    #查询当天是否有数据
-    sql_datainit = "select count from keyStatistics where time=?"
-    global nowdata
-    nowdate = (datetime.datetime.now().date(),)
-    lasttime = con.execute(sql_datainit, nowdate)
-    init_data = lasttime.fetchone()
+    #取得启动时的时间，方便再程序退出的时候保存对应天数的数据
+    global nowdate
+    nowdate = datetime.datetime.now().date()
 
-
+    # 查询当天是否有数据
+    init_data = store.isExist(nowdate)
     if init_data != None:
         times = init_data['count']
 
