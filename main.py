@@ -73,24 +73,29 @@ def GUI():
     # ---------------------------临时的GUI，过渡使用--------------------
     root = tk.Tk()
     root.resizable(0, 0)
+    root.geometry('170x100')
 
     mainCanves = tk.Frame(root, height=150, width=250)
     mainCanves.pack()
 
     label_kb_text = tk.Label(mainCanves, text="今天敲击键盘次数：")
-    label_kb_text.grid(row=0, column=0)
+    label_kb_text.place(relx=0, rely=0.1, anchor="nw")
 
     # Label组件
     global label_kb_count
     label_kb_count = tk.Label(mainCanves, text=str(kb_count))
-    label_kb_count.grid(row=0, column=1)
+    label_kb_count.place(relx=0.7, rely=0.1, anchor="nw")
 
     label_ms_text = tk.Label(mainCanves, text="今天敲击鼠标次数:")
-    label_ms_text.grid(row=1, column=0)
+    label_ms_text.place(x=0, rely=0.3, anchor="nw")
 
     global label_ms_count
     label_ms_count = tk.Label(mainCanves, text=str(ms_count))
-    label_ms_count.grid(row=1, column=1)
+    label_ms_count.place(relx=0.7, rely=0.3, anchor="nw")
+
+    img_png = tk.PhotoImage(file='img/setting1.png')
+    button_setting = tk.Button(mainCanves, image=img_png)
+    button_setting.place(relx=0.7, rely=0.8, anchor="nw")
 
     root.protocol('WM_DELETE_WINDOW', lambda: exitAndSave(root))
 
