@@ -2,12 +2,9 @@ import datetime
 import os
 import sqlite3
 import sys
-import MainUI
 import store
 import threading
 from pynput import keyboard, mouse
-from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QMainWindow
-import PyQt5
 import tkinter as tk
 
 
@@ -21,34 +18,34 @@ def dict_factory(cursor, row):
 # 窗口关闭函数
 def exitAndSave(root):
     root.destroy()
-    global startdate  # 应用启动时的时间
-    global kb_times  # 键盘敲击次数
-    init_data = store.isExist(startdate)
+    global start_date  # 应用启动时的时间
+    global kb_count  # 键盘敲击次数
+    init_data = store.isExist(start_date)
 
     if init_data != None:
-        store.update(kb_times, startdate)
+        store.update(start_date, kb_count, ms_count)
 
     else:
-        store.insert(kb_times, startdate)
+        store.insert(start_date, kb_count, ms_count)
 
 
 def recordKeyboard(key):
-    global kb_times
+    global kb_count
     global label_kb_count
-    kb_times += 1
-    label_kb_count.config(text=str(kb_times))
-    #print(kb_times)
+    kb_count += 1
+    label_kb_count.config(text=str(kb_count))
+    # print(kb_times)
 
-def recordMouse(x, y):
-    global ms_times
+
+def recordMouse(x, y, button, pressed):
+    global ms_count
     global label_ms_count
-    kb_times += 1
-    label_ms_count.config(text=str(ms_times))
-    print(ms_times)
-
-
-def on_click(x, y, button, pressed):
-    print("click")
+    global state
+    if state:
+        ms_count += 1
+        label_ms_count.config(text=str(ms_count))
+        print(ms_count)
+    state = not state  # 改变状态
 
 
 def countKeyboard():
@@ -58,10 +55,17 @@ def countKeyboard():
                 on_release=recordKeyboard) as listener:
             listener.join()
 
+
 def countMouse():
+    # 由于这个组件按一次鼠标会默认记录为点击两次，这会导致鼠标计数变成
+    # 原来的两倍，故我们设定一个布尔型的状态变量，每记录到一次点击就改变
+    # 一次状态，仅当True的时候会计数，这样子就可以恢复正常
+    # 初始化鼠标计数状态
+    global state
+    state = True
     while True:
         with mouse.Listener(
-                on_release=recordMouse) as listener:
+                on_click=recordMouse) as listener:
             listener.join()
 
 
@@ -78,17 +82,15 @@ def GUI():
 
     # Label组件
     global label_kb_count
-    label_kb_count = tk.Label(mainCanves, text=str(kb_times))
+    label_kb_count = tk.Label(mainCanves, text=str(kb_count))
     label_kb_count.grid(row=0, column=1)
 
     label_ms_text = tk.Label(mainCanves, text="今天敲击鼠标次数:")
     label_ms_text.grid(row=1, column=0)
 
     global label_ms_count
-    label_ms_count = tk.Label(mainCanves, text=str(ms_times))
+    label_ms_count = tk.Label(mainCanves, text=str(ms_count))
     label_ms_count.grid(row=1, column=1)
-
-
 
     root.protocol('WM_DELETE_WINDOW', lambda: exitAndSave(root))
 
@@ -98,24 +100,25 @@ def GUI():
 if __name__ == "__main__":
 
     # Store the input times data
-    global kb_times
-    global ms_times
+    global kb_count
+    global ms_count
     global label_kb_count
     isExit = False
-    kb_times = 0  # 启动时将键盘敲击次数默认为0
-    ms_times = 0  # 启动时将鼠标敲击次数默认为0
+    kb_count = 0  # 启动时将键盘敲击次数默认为0
+    ms_count = 0  # 启动时将鼠标敲击次数默认为0
 
     # 如果是初次启动没有数据库表则新建数据库表
     store.initTable()
 
     # 取得启动时的时间，方便再程序退出的时候保存对应天数的数据
-    global startdate
-    startdate = datetime.datetime.now().date()
+    global start_date
+    start_date = datetime.datetime.now().date()
 
     # 查询当天是否有数据
-    init_data = store.isExist(startdate)
-    if init_data != None:
-        kb_times = init_data['count']
+    init_data = store.isExist(start_date)
+    if init_data is not None:
+        kb_count = init_data['kb_count']
+        ms_count = init_data['ms_count']
 
     t1 = threading.Thread(target=GUI)
     t2 = threading.Thread(target=countKeyboard)
