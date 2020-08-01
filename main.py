@@ -7,9 +7,9 @@ import threading
 from pynput import keyboard, mouse
 import tkinter as tk
 
-
 def openSetting():
     pass
+
 
 def dict_factory(cursor, row):
     d = {}
@@ -52,7 +52,6 @@ def recordMouse(x, y, button, pressed):
 
 
 def countKeyboard():
-    # 该线程由于一直无法结束监听而似乎没有被关闭
     while True:
         with keyboard.Listener(
                 on_release=recordKeyboard) as listener:
